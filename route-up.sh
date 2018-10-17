@@ -17,5 +17,3 @@ ip rule add to "$route_vpn_gateway/32" table "$rt_table"
 ip route flush cache
 
 iptables -t nat -A POSTROUTING --source "$custom_local_address" -j SNAT --to-source "$ifconfig_local"
-
-exit 0
