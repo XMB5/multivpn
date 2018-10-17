@@ -43,6 +43,7 @@ const unsafeOvpnOpts = ['script-security', 'auth-user-pass', 'setenv', 'verb', '
     'auth-user-pass-verify'];
 
 const routeUpPath = path.join(__dirname, 'route-up.sh');
+const routeDownPath = path.join(__dirname, 'route-down.sh');
 
 class OpenVPNSwitch extends EventEmitter {
 
@@ -57,6 +58,7 @@ class OpenVPNSwitch extends EventEmitter {
         this.cmdlineArgs = [
             '--script-security', '2',
             '--route-up', routeUpPath,
+            '--route-pre-down', routeDownPath,
             '--route-noexec',
             '--setenv', 'rt_table', this.tableNum,
             '--setenv', 'custom_local_address', this.deviceIp,
