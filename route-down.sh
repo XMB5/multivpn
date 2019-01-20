@@ -1,7 +1,5 @@
 #!/bin/bash
 
-printenv | sort
-
 source "$(dirname "$0")/util.sh"
 
 ip route del "$trusted_ip/32"

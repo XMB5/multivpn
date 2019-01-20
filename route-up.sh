@@ -1,7 +1,5 @@
 #!/bin/bash
 
-printenv | sort
-
 source "$(dirname "$0")/util.sh"
 
 ip link set dev "$dev" up mtu "$tun_mtu"
