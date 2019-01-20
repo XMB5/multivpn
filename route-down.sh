@@ -1,11 +1,23 @@
 #!/bin/bash
 
-echo "route-down > dev: $dev  rt_table: $rt_table  custom_local_address: $custom_local_address  \
-ifconfig_local: $ifconfig_local  route_vpn_gateway: $route_vpn_gateway  tun_mtu: $tun_mtu"
+printenv | sort
 
-iptables -t nat -D POSTROUTING --source "$custom_local_address" -j SNAT --to-source "$ifconfig_local"
+source "$(dirname "$0")/util.sh"
 
-ip rule del from "$custom_local_address/32" table "$rt_table"
-ip rule del to "$route_vpn_gateway/32" table "$rt_table"
-ip route del default via "$custom_local_address" dev "$dev" table "$rt_table"
+ip route del "$trusted_ip/32"
+if [ -z "$custom_local_address" ]; then
+    ip route del 0.0.0.0/1
+    ip route del 128.0.0.0/1
+else
+    iptables -t nat -D POSTROUTING -s "$custom_local_address" -j SNAT --to-source "$orig_ifconfig_local"
+    for direction in from to; do
+        ip rule del $direction "$ifconfig_local/32" table "$route_table"
+    done
+    ip route flush table "$route_table"
+fi
+if [ -n "$ifconfig_remote" ]; then
+    ip addr del dev "$dev" local "$ifconfig_local" peer "$ifconfig_remote"
+else
+    ip addr del dev "$dev" "$ifconfig_local/$(netmask_to_netbits "$ifconfig_netmask")"
+fi
 ip route flush cache

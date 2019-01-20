@@ -1,19 +1,26 @@
 #!/bin/bash
 
-echo "route-up > dev: $dev  rt_table: $rt_table  custom_local_address: $custom_local_address  \
-ifconfig_local: $ifconfig_local  ifconfig_remote: $ifconfig_remote  route_vpn_gateway: $route_vpn_gateway  \
-tun_mtu: $tun_mtu"
+printenv | sort
 
-if [[ "$dev" != tun* ]]; then
-    echo "only tun devices are supported"
-    exit 1
+source "$(dirname "$0")/util.sh"
+
+ip link set dev "$dev" up mtu "$tun_mtu"
+
+if [ -n "$ifconfig_remote" ]; then
+    ip addr add dev "$dev" local "$ifconfig_local" peer "$ifconfig_remote";
+else
+    ip addr add dev "$dev" "$ifconfig_local/$(netmask_to_netbits "$ifconfig_netmask")" broadcast "$ifconfig_broadcast"
 fi
 
-ifconfig "$dev" "$custom_local_address" pointopoint "$ifconfig_remote" mtu "$tun_mtu"
-
-ip route add default via "$route_vpn_gateway" dev "$dev" table "$rt_table"
-ip rule add from "$custom_local_address/32" table "$rt_table"
-ip rule add to "$route_vpn_gateway/32" table "$rt_table"
+ip route add "$trusted_ip/32" via "$route_net_gateway"
+if [ -z "$custom_local_address" ]; then
+    ip route add 0.0.0.0/1 via "$route_vpn_gateway"
+    ip route add 128.0.0.0/1 via "$route_vpn_gateway"
+else
+    ip route add default via "$ifconfig_local" dev "$dev" table "$route_table"
+    for direction in from to; do
+        ip rule add $direction "$ifconfig_local/32" table "$route_table"
+    done
+    iptables -t nat -A POSTROUTING -s "$custom_local_address" -j SNAT --to-source "$orig_ifconfig_local"
+fi
 ip route flush cache
-
-iptables -t nat -A POSTROUTING --source "$custom_local_address" -j SNAT --to-source "$ifconfig_local"
