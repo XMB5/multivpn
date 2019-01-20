@@ -1,7 +1,23 @@
+/*
+This file is part of MultiVPN.
+
+MultiVPN is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+MultiVPN is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 const path = require('path');
 const childProcess = require('child_process');
 const EventEmitter = require('events');
-const readline = require('readline');
 const http = require('http');
 const https = require('https');
 
@@ -60,7 +76,8 @@ class OpenVPNSwitch extends EventEmitter {
             '--route-up', routeUpPath,
             '--route-pre-down', routeDownPath,
             '--route-noexec',
-            '--setenv', 'rt_table', this.tableNum,
+            '--ifconfig-noexec',
+            '--setenv', 'route_table', this.tableNum,
             '--setenv', 'custom_local_address', this.deviceIp,
             '--auth-user-pass', userpassFile];
 
@@ -89,14 +106,6 @@ class OpenVPNSwitch extends EventEmitter {
         this.child.on('error', e => {
             this.emit('error', e);
         });
-        readline.createInterface(this.child.stdout).on('line', line => {
-            if (line.startsWith('route-up >')) {
-                this.iptablesChanged = true;
-                this.ifconfigLocal = /ifconfig_local: (\d+\.\d+\.\d+\.\d+) {2}ifconfig_remote: /.exec(line)[1];
-            } else if (/^\w{3} \w{3} \d{2} \d{2}:\d{2}:\d{2} \d{4} Initialization Sequence Completed$/.test(line)) {
-                this.emit('connect');
-            }
-        });
 
     }
 
@@ -104,19 +113,6 @@ class OpenVPNSwitch extends EventEmitter {
 
         if (this.childRunning) {
             this.child.kill('SIGINT');
-        }
-
-        if (this.iptablesChanged) {
-            this.iptablesChanged = false;
-
-            let iptablesChild = childProcess.spawn('iptables','-t', 'nat', '-D', 'POSTROUTING',
-                '--source', this.deviceIp, '-j', 'SNAT', '--to-source', this.ifconfigLocal);
-
-            iptablesChild.on('exit', code => {
-                if (code !== 0) {
-                    this.error('iptables reset command returned error code', code);
-                }
-            });
         }
 
     }
