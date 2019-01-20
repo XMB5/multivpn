@@ -5,13 +5,13 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Foobar is distributed in the hope that it will be useful,
+# MultiVPN is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+# along with MultiVPN.  If not, see <https://www.gnu.org/licenses/>.
 
 netmask_to_netbits() {
     #https://github.com/OpenVPN/openvpn/blob/14d7e0e496f15563005fffc6d4791a95444ddf23/src/openvpn/route.c#L4041
