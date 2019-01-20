@@ -132,4 +132,4 @@ class OpenVPNSwitch extends EventEmitter {
 
 }
 
-module.exports = {OpenVPNSwitch};
+module.exports = OpenVPNSwitch;

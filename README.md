@@ -31,6 +31,9 @@ made to the same IP address from different network devices by binding to the dev
 ```
 3. To use the OpenVPN connection create a connection bound to 100.64.0.1, for example `curl --interface 100.64.0.1 https://ipinfo.io/`
 
+## Example
+A nodejs class that manages MultiVPN can be found in [OpenVPNSwitch.js](https://github.com/XMB5/multivpn/blob/master/OpenVPNSwitch.js).
+
 ## Limitations
 - currently only supports IPv4
 - only for linux
